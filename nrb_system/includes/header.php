@@ -12,17 +12,21 @@ function e($value) {
 <head>
     <meta charset="UTF-8">
     <title>NRB National ID System</title>
-    <!-- Notice we go up one folder out of 'includes' to reach 'assets' -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
 <nav class="navbar">
-    <div class="nav-brand">🇲🇼 NRB National ID System</div>
+    <div class="nav-brand">
+        <img src="https://flagcdn.com/w40/mw.png" alt="Malawi Flag" style="height:20px; margin-right:8px; vertical-align: middle;">
+         NRB National ID System
+        </div>
     <ul class="nav-links">
         <li><a href="index.php">Home</a></li>
         <li><a href="register.php">Register</a></li>
         <li><a href="applicants_list.php">Applicants</a></li>
         <li><a href="cards_list.php">ID Cards</a></li>
+        <li><a href="non_citizens_list.php">Non-Citizens</a></li>
     </ul>
 </nav>
 <main class="container">

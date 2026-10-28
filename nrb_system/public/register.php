@@ -11,7 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dob   = $_POST['dob'] ?? '';
     $gender= $_POST['gender'] ?? '';
     $district_id = (int)($_POST['district_id'] ?? 0);
-    
+    $app_type = $_POST['app_type'] ?? 'New';
+    $reason   = trim($_POST['reason'] ?? '');
+
     // Save data in case we need to redisplay the form
     $old = compact('fname','lname','dob','gender','district_id');
 
@@ -45,11 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $person_id = $pdo->lastInsertId();
 
-            // Automatically create a 'Pending' application for them
-            $pdo->prepare("INSERT INTO NEW_APPLICATION (Application_date, Application_status, Person_ID, Registration_date)
-                           VALUES (CURDATE(), 'Pending', :pid, CURDATE())")
-                ->execute([':pid' => $person_id]);
-
+                        // Create the application (New or Replacement)
+            if ($app_type === 'Replacement') {
+                $pdo->prepare("INSERT INTO REPLACEMENT (Application_type, Application_date, Application_status, Person_ID, Reason)
+                               VALUES ('Replacement', CURDATE(), 'Pending', :pid, :reason)")
+                    ->execute([':pid' => $person_id, ':reason' => $reason]);
+            } else {
+                $pdo->prepare("INSERT INTO NEW_APPLICATION (Application_type, Application_date, Application_status, Person_ID, Registration_date)
+                               VALUES ('New', CURDATE(), 'Pending', :pid, CURDATE())")
+                    ->execute([':pid' => $person_id]);
+            }
             $pdo->commit();
             
             // Success! Redirect back to home or list
@@ -67,7 +74,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch districts for the dropdown menu
 $districts = $pdo->query("SELECT District_ID, District_name FROM DISTRICT ORDER BY District_name")->fetchAll();
 ?>
-
+<script>
+    function toggleReasonField() {
+        var type = document.getElementById('app_type').value;
+        var reasonField = document.getElementById('reason_field');
+        if (type === 'Replacement') {
+            reasonField.style.display = 'flex';
+        } else {
+            reasonField.style.display = 'none';
+        }
+    }
+</script>
 <h1>Register New Applicant</h1>
 
 <?php if ($errors): ?>
@@ -118,6 +135,19 @@ $districts = $pdo->query("SELECT District_ID, District_name FROM DISTRICT ORDER 
         </select>
     </div>
     
+    <div class="form-row" style="background: #edf2f7; padding: 10px; border-radius: 5px; margin-top: 20px;">
+        <label>Application Type *</label>
+        <select name="app_type" id="app_type" required onchange="toggleReasonField()">
+            <option value="New">New Application (First Time)</option>
+            <option value="Replacement">Replacement (Lost/Damaged)</option>
+        </select>
+    </div>
+
+    <div class="form-row" id="reason_field" style="display: none;">
+        <label>Reason for Replacement *</label>
+        <input type="text" name="reason" placeholder="e.g., Lost card, Name change">
+    </div>
+
     <button type="submit" class="btn btn-primary">Register Applicant</button>
 </form>
 
